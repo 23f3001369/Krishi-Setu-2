@@ -1,3 +1,4 @@
+
 'use client'
 
 import * as React from 'react';
@@ -47,6 +48,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
+import { LanguageSelector } from '@/components/shared/language-selector';
 import { useTranslation } from '@/hooks/use-translation';
 
 
@@ -59,14 +61,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
 
-  const [mounted, setMounted] = React.useState(false);
   const isMobile = useIsMobile();
   
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
+  if (isMobile === undefined) {
     return null; // or a loading skeleton
   }
 
