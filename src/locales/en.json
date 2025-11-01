@@ -274,5 +274,7 @@
     "stable": "Stable",
     "analystReasoning": "Analyst's Reasoning",
     "disclaimer": "Disclaimer",
-    "predictionDisclaimer": "This generated prediction is for informational purposes only and is not financial advice. Market conditions can change rapidly."
+    "predictionDisclaimer": "This generated prediction is for informational purposes only and is not financial advice. Market conditions can change rapidly.",
+    "weatherForecast": "Weather Forecast",
+    "weatherForecastDesc": "Current conditions and 7-day outlook for your location."
 }
