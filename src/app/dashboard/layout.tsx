@@ -48,23 +48,11 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
+import { useTranslation } from '@/hooks/use-translation';
 
 
-const navItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/dashboard/farm-registration', icon: Tractor, label: 'Farm Registration' },
-  { href: '/dashboard/krishi-khata', icon: Wallet, label: 'Krishi Khata' },
-  { href: '/dashboard/my-guides', icon: List, label: 'My Guides' },
-  { href: '/dashboard/cultivation-guide', icon: ClipboardList, label: 'New Guide' },
-  { href: '/dashboard/crop-recommendation', icon: BrainCircuit, label: 'AI Crop Tool' },
-  { href: '/dashboard/disease-detection', icon: TestTubeDiagonal, label: 'AI Disease Detection' },
-  { href: '/dashboard/market-price-prediction', icon: TrendingUp, label: 'Mandi Price' },
-  { href: '/dashboard/krishi-ai', icon: MessageSquare, label: 'Krishi AI' },
-  { href: '/dashboard/community-forum', icon: Users, label: 'Community Forum' },
-  { href: '/dashboard/profile', icon: User, label: 'Profile' },
-];
+const logoutItem = { key: 'logout', href: '/', icon: LogOut };
 
-const logoutItem = { href: '/', icon: LogOut, label: 'Log out' };
 
 export default function DashboardLayout({
   children,
@@ -94,6 +82,21 @@ export default function DashboardLayout({
 function DesktopDashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isFarmRegistrationPage = pathname === '/dashboard/farm-registration';
+  const { t } = useTranslation();
+
+  const navItems = [
+    { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { key: 'farmRegistration', href: '/dashboard/farm-registration', icon: Tractor },
+    { key: 'krishiKhata', href: '/dashboard/krishi-khata', icon: Wallet },
+    { key: 'myGuides', href: '/dashboard/my-guides', icon: List },
+    { key: 'newGuide', href: '/dashboard/cultivation-guide', icon: ClipboardList },
+    { key: 'aiCropTool', href: '/dashboard/crop-recommendation', icon: BrainCircuit },
+    { key: 'aiDiseaseDetection', href: '/dashboard/disease-detection', icon: TestTubeDiagonal },
+    { key: 'mandiPrice', href: '/dashboard/market-price-prediction', icon: TrendingUp },
+    { key: 'krishiAI', href: '/dashboard/krishi-ai', icon: MessageSquare },
+    { key: 'communityForum', href: '/dashboard/community-forum', icon: Users },
+    { key: 'profile', href: '/dashboard/profile', icon: User },
+  ];
 
   return (
     <SidebarProvider>
@@ -109,11 +112,10 @@ function DesktopDashboardLayout({ children }: { children: React.ReactNode }) {
                   <Link href={item.href}>
                     <SidebarMenuButton
                       isActive={pathname === item.href}
-                      tooltip={item.label}
+                      tooltip={t(item.key)}
                     >
                       <item.icon />
-                      <span>{item.label}</span>
-                       {item.badge && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}
+                      <span>{t(item.key)}</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
@@ -124,9 +126,9 @@ function DesktopDashboardLayout({ children }: { children: React.ReactNode }) {
               <SidebarMenu>
                  <SidebarMenuItem>
                     <Link href={logoutItem.href}>
-                      <SidebarMenuButton tooltip={logoutItem.label}>
+                      <SidebarMenuButton tooltip={t(logoutItem.key)}>
                           <logoutItem.icon />
-                          <span>{logoutItem.label}</span>
+                          <span>{t(logoutItem.key)}</span>
                       </SidebarMenuButton>
                     </Link>
                  </SidebarMenuItem>
@@ -154,6 +156,21 @@ function DesktopDashboardLayout({ children }: { children: React.ReactNode }) {
 function MobileDashboardLayout({children}: {children: React.ReactNode}){
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
+  const { t } = useTranslation();
+
+  const navItems = [
+    { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { key: 'farmRegistration', href: '/dashboard/farm-registration', icon: Tractor },
+    { key: 'krishiKhata', href: '/dashboard/krishi-khata', icon: Wallet },
+    { key: 'myGuides', href: '/dashboard/my-guides', icon: List },
+    { key: 'newGuide', href: '/dashboard/cultivation-guide', icon: ClipboardList },
+    { key: 'aiCropTool', href: '/dashboard/crop-recommendation', icon: BrainCircuit },
+    { key: 'aiDiseaseDetection', href: '/dashboard/disease-detection', icon: TestTubeDiagonal },
+    { key: 'mandiPrice', href: '/dashboard/market-price-prediction', icon: TrendingUp },
+    { key: 'krishiAI', href: '/dashboard/krishi-ai', icon: MessageSquare },
+    { key: 'communityForum', href: '/dashboard/community-forum', icon: Users },
+    { key: 'profile', href: '/dashboard/profile', icon: User },
+  ];
 
   return (
      <div className="flex min-h-screen w-full flex-col">
@@ -188,8 +205,7 @@ function MobileDashboardLayout({children}: {children: React.ReactNode}){
                   )}
                 >
                   <item.icon className="h-4 w-4" />
-                  {item.label}
-                   {item.badge && <span className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs">{item.badge}</span>}
+                  {t(item.key)}
                 </Link>
               ))}
             </nav>
@@ -200,7 +216,7 @@ function MobileDashboardLayout({children}: {children: React.ReactNode}){
                   className={'flex items-center gap-3 rounded-lg px-3 py-2 transition-all text-muted-foreground hover:text-primary'}
                 >
                   <logoutItem.icon className="h-4 w-4" />
-                  {logoutItem.label}
+                  {t(logoutItem.key)}
                 </Link>
             </div>
           </SheetContent>
@@ -208,6 +224,7 @@ function MobileDashboardLayout({children}: {children: React.ReactNode}){
         <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
             <div className="ml-auto flex items-center gap-2">
                <UserMenu />
+               <LanguageSelector />
                <ThemeToggle />
             </div>
         </div>
@@ -222,6 +239,7 @@ function MobileDashboardLayout({children}: {children: React.ReactNode}){
 }
 
 function UserMenu() {
+  const { t } = useTranslation();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -239,7 +257,7 @@ function UserMenu() {
         <DropdownMenuItem asChild>
           <Link href="/dashboard/profile">
             <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+            <span>{t('profile')}</span>
           </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>

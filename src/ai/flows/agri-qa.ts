@@ -13,6 +13,7 @@ import { z } from 'genkit';
 
 const AgriQaInputSchema = z.object({
   question: z.string().describe('The user\'s agricultural question.'),
+  language: z.string().optional().describe('The language for the answer (e.g., "Hindi", "Punjabi").'),
 });
 export type AgriQaInput = z.infer<typeof AgriQaInputSchema>;
 
@@ -33,6 +34,10 @@ const prompt = ai.definePrompt({
 
 User's Question:
 "{{{question}}}"
+
+{{#if language}}
+The user has requested the answer in {{language}}. You MUST provide the answer in {{language}}.
+{{/if}}
 
 Based on this question, provide a helpful and informative answer.
 `,

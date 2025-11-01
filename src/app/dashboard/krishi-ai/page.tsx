@@ -18,6 +18,7 @@ import { useUser } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useTranslation } from '@/hooks/use-translation';
 
 type Message = {
   id: string;
@@ -31,6 +32,7 @@ export default function KrishiAIChatPage() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const { langName } = useTranslation();
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -55,7 +57,7 @@ export default function KrishiAIChatPage() {
     setIsLoading(true);
 
     try {
-      const response = await agriQa({ question: input });
+      const response = await agriQa({ question: input, language: langName });
       const botMessage: Message = {
         id: `bot-${Date.now()}`,
         role: 'bot',
