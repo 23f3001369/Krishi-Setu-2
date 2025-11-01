@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -37,25 +38,36 @@ export function LanguageProvider({
   storageKey = "krishi-setu-lang",
   ...props
 }: LanguageProviderProps) {
-  const [language, setLanguage] = React.useState<Language>(() => {
-    if (typeof window === 'undefined') {
-      return defaultLanguage;
-    }
-    return (localStorage.getItem(storageKey) as Language) || defaultLanguage
-  })
+  const [language, setLanguage] = React.useState<Language>(defaultLanguage);
+  const [isMounted, setIsMounted] = React.useState(false);
 
   React.useEffect(() => {
-    const root = window.document.documentElement
-    root.setAttribute("lang", language)
-  }, [language])
+      setIsMounted(true);
+      const storedLang = localStorage.getItem(storageKey) as Language | null;
+      if (storedLang && Object.keys(translations).includes(storedLang)) {
+          setLanguage(storedLang);
+      }
+  }, [storageKey]);
+
+  const setLanguageWrapper = (lang: Language) => {
+    localStorage.setItem(storageKey, lang)
+    setLanguage(lang)
+  };
+
+  React.useEffect(() => {
+    if (isMounted) {
+        document.documentElement.setAttribute("lang", language);
+    }
+  }, [language, isMounted]);
 
   const value = {
     language,
-    setLanguage: (lang: Language) => {
-      localStorage.setItem(storageKey, lang)
-      setLanguage(lang)
-    },
+    setLanguage: setLanguageWrapper,
     translations: translations[language] || translations.en
+  }
+
+  if (!isMounted) {
+    return null;
   }
 
   return (
