@@ -46,6 +46,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useTranslation } from '@/hooks/use-translation';
 
 
 const heroImage = PlaceHolderImages.find(p => p.id === "cultivation-guide-hero");
@@ -99,6 +100,7 @@ export default function CultivationGuidePage() {
   const db = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const guidesCollectionRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -130,8 +132,8 @@ export default function CultivationGuidePage() {
     if (!user || !db) {
         toast({
             variant: 'destructive',
-            title: 'Error',
-            description: 'You must be logged in to create a guide.',
+            title: t('error'),
+            description: t('mustBeLoggedInToCreateGuide'),
         });
         return;
     }
@@ -157,15 +159,15 @@ export default function CultivationGuidePage() {
       }
       
       toast({
-        title: 'Guide Created!',
-        description: `Your cultivation plan for ${result.crop} has been saved to "My Guides".`,
+        title: t('guideCreated'),
+        description: t('guideCreatedDesc', { crop: result.crop }),
       });
 
       router.push('/dashboard/my-guides');
 
     } catch (e) {
       console.error(e);
-      setError('Failed to generate the cultivation guide. Please try again.');
+      setError(t('failedToGenerateGuide'));
     }
     setIsLoading(false);
   };
@@ -178,14 +180,14 @@ export default function CultivationGuidePage() {
     return (
         <div className="space-y-8">
              <div className="mb-8">
-                <h1 className="text-3xl font-bold tracking-tight font-headline">New Cultivation Guide</h1>
-                <p className="text-muted-foreground">Agronomy-powered, stage-wise planning for your crops.</p>
+                <h1 className="text-3xl font-bold tracking-tight font-headline">{t('newCultivationGuide')}</h1>
+                <p className="text-muted-foreground">{t('newCultivationGuideDesc')}</p>
             </div>
              <Card>
                 <CardHeader className="items-center text-center p-6">
                     <Bot className="w-12 h-12 text-primary animate-pulse" />
-                    <CardTitle>Generating Your Guide</CardTitle>
-                    <CardDescription>Our AI is creating a personalized cultivation plan for your {formData.crop} crop. This may take a moment...</CardDescription>
+                    <CardTitle>{t('generatingYourGuide')}</CardTitle>
+                    <CardDescription>{t('generatingYourGuideDesc', { crop: formData.crop })}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
                     <Skeleton className="h-8 w-1/2 mx-auto" />
@@ -200,43 +202,43 @@ export default function CultivationGuidePage() {
   return (
     <div className="space-y-8">
       <div className='mb-8'>
-        <h1 className="text-3xl font-bold tracking-tight font-headline">New Cultivation Guide</h1>
-        <p className="text-muted-foreground">Agronomy-powered, stage-wise planning for your crops.</p>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">{t('newCultivationGuide')}</h1>
+        <p className="text-muted-foreground">{t('newCultivationGuideDesc')}</p>
       </div>
 
        <Card className="max-w-2xl mx-auto">
         <CardHeader>
-            <CardTitle>Create a New Cultivation Plan</CardTitle>
-            <CardDescription>Provide details about your crop to generate a personalized guide.</CardDescription>
+            <CardTitle>{t('createNewCultivationPlan')}</CardTitle>
+            <CardDescription>{t('createNewCultivationPlanDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="crop" className="flex items-center gap-1"><Sprout className="w-4 h-4"/> Crop Name</Label>
-                    <Input id="crop" name="crop" placeholder="e.g., Corn, Tomato" value={formData.crop} onChange={handleInputChange} />
+                    <Label htmlFor="crop" className="flex items-center gap-1"><Sprout className="w-4 h-4"/> {t('cropName')}</Label>
+                    <Input id="crop" name="crop" placeholder={t('cropNamePlaceholder')} value={formData.crop} onChange={handleInputChange} />
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="area" className="flex items-center gap-1"><AreaChart className="w-4 h-4"/> Area (in acres)</Label>
-                    <Input id="area" name="area" type="number" placeholder="e.g., 5" value={formData.area} onChange={handleInputChange} />
+                    <Label htmlFor="area" className="flex items-center gap-1"><AreaChart className="w-4 h-4"/> {t('areaAcres')}</Label>
+                    <Input id="area" name="area" type="number" placeholder={t('areaPlaceholder')} value={formData.area} onChange={handleInputChange} />
                 </div>
             </div>
              <div className="space-y-2">
-                <Label htmlFor="variety">Crop Variety</Label>
+                <Label htmlFor="variety">{t('cropVariety')}</Label>
                  {suggestedVarieties.length > 0 ? (
                     <div className="space-y-2">
                         <Select onValueChange={handleVarietyChange} value={showOtherVariety ? 'other' : formData.variety}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a variety or let AI recommend" />
+                                <SelectValue placeholder={t('selectVarietyPlaceholder')} />
                             </SelectTrigger>
                             <SelectContent>
                                 {suggestedVarieties.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-                                <SelectItem value="other">Other...</SelectItem>
+                                <SelectItem value="other">{t('other')}</SelectItem>
                             </SelectContent>
                         </Select>
                         {showOtherVariety && (
                             <Input 
                                 name="variety" 
-                                placeholder="Please specify variety" 
+                                placeholder={t('specifyVarietyPlaceholder')}
                                 value={formData.variety} 
                                 onChange={handleInputChange} 
                                 className="mt-2"
@@ -244,20 +246,20 @@ export default function CultivationGuidePage() {
                         )}
                     </div>
                 ) : (
-                    <Input id="variety" name="variety" placeholder="e.g., Pioneer P1197 (or leave blank for AI)" value={formData.variety} onChange={handleInputChange} />
+                    <Input id="variety" name="variety" placeholder={t('varietyPlaceholder')} value={formData.variety} onChange={handleInputChange} />
                 )}
             </div>
              <div className="space-y-2">
-                <Label htmlFor="weather" className="flex items-center gap-1"><Sun className="w-4 h-4"/> Current Weather</Label>
-                <Textarea id="weather" name="weather" placeholder="Describe the current weather conditions, e.g., 'Sunny, 30°C, high humidity'" value={formData.weather} onChange={handleInputChange} />
+                <Label htmlFor="weather" className="flex items-center gap-1"><Sun className="w-4 h-4"/> {t('currentWeather')}</Label>
+                <Textarea id="weather" name="weather" placeholder={t('currentWeatherPlaceholder')} value={formData.weather} onChange={handleInputChange} />
             </div>
              <div className="space-y-2">
-                <Label htmlFor="soilHealth" className="flex items-center gap-1"><Leaf className="w-4 h-4"/> Soil Health Details</Label>
-                <Textarea id="soilHealth" name="soilHealth" placeholder="Describe your soil, e.g., 'pH 6.5, good nitrogen, low potassium. Or, upload a soil card.'" value={formData.soilHealth} onChange={handleInputChange} />
+                <Label htmlFor="soilHealth" className="flex items-center gap-1"><Leaf className="w-4 h-4"/> {t('soilHealthDetails')}</Label>
+                <Textarea id="soilHealth" name="soilHealth" placeholder={t('soilHealthPlaceholder')} value={formData.soilHealth} onChange={handleInputChange} />
             </div>
              {error && (
               <Alert variant="destructive">
-                <AlertTitle>Error</AlertTitle>
+                <AlertTitle>{t('error')}</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
@@ -265,7 +267,7 @@ export default function CultivationGuidePage() {
         <CardFooter className="p-6">
             <Button onClick={handleGenerateGuide} disabled={!isFormValid}>
                 <Bot className="mr-2 h-4 w-4" />
-                Generate & Save Guide
+                {t('generateAndSaveGuide')}
             </Button>
         </CardFooter>
        </Card>

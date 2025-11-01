@@ -32,6 +32,7 @@ import { doc, getDoc, collection, query, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
+import { useTranslation } from '@/hooks/use-translation';
 
 
 const profileFormSchema = z.object({
@@ -67,6 +68,7 @@ type Farm = {
 function RegisteredFarmsCard() {
     const { user } = useUser();
     const db = useFirestore();
+    const { t } = useTranslation();
 
     const farmsQuery = useMemoFirebase(() => {
         if (!db || !user?.uid) return null;
@@ -80,9 +82,9 @@ function RegisteredFarmsCard() {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Tractor className="w-5 h-5 text-primary" />
-                    Registered Farms
+                    {t('registeredFarms')}
                 </CardTitle>
-                <CardDescription>View and manage all your registered farms.</CardDescription>
+                <CardDescription>{t('registeredFarmsDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 p-6">
                 {isLoading ? (
@@ -99,14 +101,14 @@ function RegisteredFarmsCard() {
                                 <h3 className="font-semibold">{farm.name}</h3>
                                 <div className="text-sm text-muted-foreground mt-2 space-y-1">
                                     <p className="flex items-center gap-2"><MapPin className="w-4 h-4" />{farm.location}</p>
-                                    <p className="flex items-center gap-2"><AreaChart className="w-4 h-4" />{farm.size} acres</p>
+                                    <p className="flex items-center gap-2"><AreaChart className="w-4 h-4" />{farm.size} {t('acres')}</p>
                                     <p className="flex items-center gap-2"><Sprout className="w-4 h-4" />{farm.mainCrops.join(', ')}</p>
                                 </div>
                             </div>
                              <Button variant="outline" size="sm" asChild>
                                 <Link href={`/dashboard/farm-registration?id=${farm.id}`}>
                                     <Edit className="w-3 h-3 mr-2" />
-                                    Edit
+                                    {t('edit')}
                                 </Link>
                             </Button>
                         </div>
@@ -114,11 +116,11 @@ function RegisteredFarmsCard() {
                     ))
                 ) : (
                     <div className="text-center text-muted-foreground p-8 border-2 border-dashed rounded-lg">
-                        <p>You have not registered any farms yet.</p>
+                        <p>{t('noFarmsRegistered')}</p>
                          <Button variant="secondary" className="mt-4" asChild>
                             <Link href="/dashboard/farm-registration">
                                 <PlusCircle className="mr-2 h-4 w-4" />
-                                Register a Farm
+                                {t('registerAFarm')}
                             </Link>
                         </Button>
                     </div>
@@ -129,7 +131,7 @@ function RegisteredFarmsCard() {
                     <Button variant="secondary" asChild>
                         <Link href="/dashboard/farm-registration">
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Register Another Farm
+                            {t('registerAnotherFarm')}
                         </Link>
                     </Button>
                 </CardFooter>
@@ -141,6 +143,7 @@ function RegisteredFarmsCard() {
 
 export default function ProfilePage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
   const { user, isUserLoading: isAuthUserLoading } = useUser();
@@ -202,8 +205,8 @@ export default function ProfilePage() {
     // and in Firestore.
     await new Promise((resolve) => setTimeout(resolve, 1000));
     toast({
-      title: 'Profile Updated',
-      description: 'Your profile has been successfully updated.',
+      title: t('profileUpdated'),
+      description: t('profileUpdatedDesc'),
     });
     setIsLoading(false);
   }
@@ -214,8 +217,8 @@ export default function ProfilePage() {
     // TODO: Implement Firebase password change logic
     await new Promise((resolve) => setTimeout(resolve, 1000));
     toast({
-      title: 'Password Changed',
-      description: 'Your password has been successfully updated.',
+      title: t('passwordChanged'),
+      description: t('passwordChangedDesc'),
     });
     passwordForm.reset();
     setIsPasswordLoading(false);
@@ -226,10 +229,10 @@ export default function ProfilePage() {
         <div className="space-y-8">
             <div className="mb-8">
                 <h1 className="text-3xl font-bold tracking-tight font-headline">
-                My Profile
+                {t('myProfile')}
                 </h1>
                 <p className="text-muted-foreground">
-                    View and manage your account and farm details.
+                    {t('myProfileDesc')}
                 </p>
             </div>
 
@@ -239,8 +242,8 @@ export default function ProfilePage() {
                         <Form {...profileForm}>
                         <form onSubmit={profileForm.handleSubmit(onProfileSubmit)}>
                             <CardHeader>
-                                <CardTitle>Account Information</CardTitle>
-                                <CardDescription>Update your personal details here.</CardDescription>
+                                <CardTitle>{t('accountInformation')}</CardTitle>
+                                <CardDescription>{t('accountInformationDesc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6 p-6">
                                 <div className="flex items-center gap-4">
@@ -251,7 +254,7 @@ export default function ProfilePage() {
                                         </Avatar>
                                         <Button size="icon" variant="outline" className="absolute bottom-0 right-0 rounded-full h-7 w-7">
                                             <Camera className="h-4 w-4" />
-                                            <span className="sr-only">Change Photo</span>
+                                            <span className="sr-only">{t('changePhoto')}</span>
                                         </Button>
                                     </div>
                                     {isUserLoading ? (
@@ -261,7 +264,7 @@ export default function ProfilePage() {
                                         </div>
                                     ) : (
                                         <div>
-                                            <h2 className="text-xl font-semibold">{profileForm.watch('name') || 'No Name'}</h2>
+                                            <h2 className="text-xl font-semibold">{profileForm.watch('name') || t('noName')}</h2>
                                             <p className="text-sm text-muted-foreground">{profileForm.watch('email')}</p>
                                         </div>
                                     )}
@@ -271,9 +274,9 @@ export default function ProfilePage() {
                                     name="name"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>Full Name</FormLabel>
+                                        <FormLabel>{t('fullName')}</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Your Name" {...field} disabled={isUserLoading} />
+                                            <Input placeholder={t('yourName')} {...field} disabled={isUserLoading} />
                                         </FormControl>
                                         <FormMessage />
                                         </FormItem>
@@ -284,7 +287,7 @@ export default function ProfilePage() {
                                     name="email"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>Email Address</FormLabel>
+                                        <FormLabel>{t('emailAddress')}</FormLabel>
                                         <FormControl>
                                             <Input type="email" placeholder="your.email@example.com" {...field} disabled />
                                         </FormControl>
@@ -297,11 +300,11 @@ export default function ProfilePage() {
                                     name="mobile"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>Mobile Number</FormLabel>
+                                        <FormLabel>{t('mobileNumber')}</FormLabel>
                                         <FormControl>
                                         <div className="relative">
                                                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                <Input placeholder="Your mobile number" {...field} className="pl-9" disabled={isUserLoading}/>
+                                                <Input placeholder={t('yourMobileNumber')} {...field} className="pl-9" disabled={isUserLoading}/>
                                         </div>
                                         </FormControl>
                                         <FormMessage />
@@ -311,7 +314,7 @@ export default function ProfilePage() {
                             </CardContent>
                             <CardFooter className="p-6">
                                 <Button type="submit" disabled={isLoading || isUserLoading}>
-                                    {isLoading ? 'Saving...' : 'Save Changes'}
+                                    {isLoading ? t('saving') : t('saveChanges')}
                                 </Button>
                             </CardFooter>
                         </form>
@@ -324,9 +327,9 @@ export default function ProfilePage() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Shield className="w-5 h-5 text-primary" />
-                                    Security
+                                    {t('security')}
                                 </CardTitle>
-                                <CardDescription>Change your password.</CardDescription>
+                                <CardDescription>{t('securityDesc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4 p-6">
                                 <FormField
@@ -334,7 +337,7 @@ export default function ProfilePage() {
                                     name="currentPassword"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>Current Password</FormLabel>
+                                        <FormLabel>{t('currentPassword')}</FormLabel>
                                         <FormControl>
                                             <Input type="password" {...field} />
                                         </FormControl>
@@ -347,7 +350,7 @@ export default function ProfilePage() {
                                     name="newPassword"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>New Password</FormLabel>
+                                        <FormLabel>{t('newPassword')}</FormLabel>
                                         <FormControl>
                                             <Input type="password" {...field} />
                                         </FormControl>
@@ -360,7 +363,7 @@ export default function ProfilePage() {
                                     name="confirmPassword"
                                     render={({ field }) => (
                                         <FormItem>
-                                        <FormLabel>Confirm New Password</FormLabel>
+                                        <FormLabel>{t('confirmNewPassword')}</FormLabel>
                                         <FormControl>
                                             <Input type="password" {...field} />
                                         </FormControl>
@@ -371,7 +374,7 @@ export default function ProfilePage() {
                             </CardContent>
                             <CardFooter className="p-6">
                                 <Button type="submit" disabled={isPasswordLoading}>
-                                    {isPasswordLoading ? 'Updating...' : 'Change Password'}
+                                    {isPasswordLoading ? t('updating') : t('changePassword')}
                                 </Button>
                             </CardFooter>
                         </form>

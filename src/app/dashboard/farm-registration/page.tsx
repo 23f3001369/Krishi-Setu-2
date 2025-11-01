@@ -25,6 +25,7 @@ import { useUser, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, addDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "@/hooks/use-translation";
 
 
 const totalSteps = 3;
@@ -32,6 +33,7 @@ const totalSteps = 3;
 export default function FarmRegistrationPage() {
   const searchParams = useSearchParams();
   const farmId = searchParams.get('id');
+  const { t } = useTranslation();
 
   const [step, setStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -67,16 +69,16 @@ export default function FarmRegistrationPage() {
           });
           setPhotos(data.photos || []);
         } else {
-          toast({ variant: 'destructive', title: 'Error', description: 'Farm not found.' });
+          toast({ variant: 'destructive', title: t('error'), description: t('farmNotFound') });
         }
       }).catch(error => {
         console.error("Error fetching farm document:", error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch farm details.' });
+        toast({ variant: 'destructive', title: t('error'), description: t('couldNotFetchFarm') });
       }).finally(() => {
         setIsLoading(false);
       });
     }
-  }, [farmDocRef, toast]);
+  }, [farmDocRef, toast, t]);
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -109,8 +111,8 @@ export default function FarmRegistrationPage() {
     if (!user || !db) {
         toast({
             variant: 'destructive',
-            title: 'Error',
-            description: 'You must be logged in to register a farm.',
+            title: t('error'),
+            description: t('mustBeLoggedInToRegister'),
         });
         return;
     }
@@ -128,15 +130,15 @@ export default function FarmRegistrationPage() {
         if (farmDocRef) {
              await updateDoc(farmDocRef, farmData);
              toast({
-                title: 'Farm Updated',
-                description: 'Your farm details have been successfully updated.',
+                title: t('farmUpdated'),
+                description: t('farmUpdatedDesc'),
              });
         } else {
             const farmsCollectionRef = collection(db, 'farms');
             await addDoc(farmsCollectionRef, farmData);
             toast({
-                title: 'Registration Complete!',
-                description: 'Your farm has been successfully registered.',
+                title: t('registrationComplete'),
+                description: t('registrationCompleteDesc'),
             });
         }
         setIsSubmitted(true);
@@ -144,8 +146,8 @@ export default function FarmRegistrationPage() {
         console.error("Error writing document: ", error);
         toast({
             variant: 'destructive',
-            title: farmId ? 'Update Failed' : 'Registration Failed',
-            description: `Could not save your farm details. Please try again.`,
+            title: farmId ? t('updateFailed') : t('registrationFailed'),
+            description: t('couldNotSaveFarm'),
         });
     }
   };
@@ -160,20 +162,20 @@ export default function FarmRegistrationPage() {
                     <div className="bg-primary/10 p-3 rounded-full mb-4">
                         <Check className="h-10 w-10 text-primary" />
                     </div>
-                    <CardTitle>{farmId ? 'Update Successful!' : 'Registration Complete!'}</CardTitle>
-                    <CardDescription>{farmId ? 'Your farm details have been updated.' : 'Your farm has been successfully registered.'}</CardDescription>
+                    <CardTitle>{farmId ? t('updateSuccessful') : t('registrationComplete')}</CardTitle>
+                    <CardDescription>{farmId ? t('farmUpdatedDesc') : t('registrationCompleteDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6">
                     <Alert>
                         <Send className="h-4 w-4" />
-                        <AlertTitle>What's Next?</AlertTitle>
+                        <AlertTitle>{t('whatsNext')}</AlertTitle>
                         <AlertDescription>
-                            You can view your updated farm details on your profile or explore the dashboard.
+                            {t('whatsNextDesc')}
                         </AlertDescription>
                     </Alert>
                 </CardContent>
                 <CardFooter className="p-6">
-                    <Button className="w-full" onClick={() => window.location.href = '/dashboard/profile'}>Go to My Profile</Button>
+                    <Button className="w-full" onClick={() => window.location.href = '/dashboard/profile'}>{t('goToMyProfile')}</Button>
                 </CardFooter>
             </Card>
         </div>
@@ -183,14 +185,14 @@ export default function FarmRegistrationPage() {
   return (
     <div className="space-y-8 w-full p-4 sm:p-6 lg:p-8">
         <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight font-headline">{farmId ? 'Edit Your Farm' : 'Register Your Farm'}</h1>
-            <p className="text-muted-foreground">Follow the steps to {farmId ? 'update' : 'add'} your farm details.</p>
+            <h1 className="text-3xl font-bold tracking-tight font-headline">{farmId ? t('editYourFarm') : t('registerYourFarm')}</h1>
+            <p className="text-muted-foreground">{t(farmId ? 'editFarmDesc' : 'addFarmDesc')}</p>
         </div>
         <Card className="w-full">
         <CardHeader className="p-6">
-            <CardTitle>Step {step}: {step === 1 ? 'Farm Details' : step === 2 ? 'Location' : 'Photos'}</CardTitle>
+            <CardTitle>{t('step')} {step}: {step === 1 ? t('farmDetails') : step === 2 ? t('location') : t('photos')}</CardTitle>
             <CardDescription>
-                {step === 1 ? 'Provide basic information about your farm.' : step === 2 ? 'Pin your farm\'s location.' : 'Add links to photos of your farm.'}
+                {step === 1 ? t('step1Desc') : step === 2 ? t('step2Desc') : t('step3Desc')}
             </CardDescription>
             <Progress value={progress} className="w-full mt-2" />
         </CardHeader>
@@ -221,16 +223,16 @@ export default function FarmRegistrationPage() {
         <CardFooter className="flex justify-between p-6">
             <Button variant="outline" onClick={handleBack} disabled={step === 1}>
                 <ChevronsLeft className="mr-2 h-4 w-4" />
-                Back
+                {t('back')}
             </Button>
             {step < totalSteps ? (
             <Button onClick={handleNext} disabled={(step === 1 && !isStep1Valid) || (step === 2 && !isStep2Valid)}>
-                Next
+                {t('next')}
                 <ChevronsRight className="ml-2 h-4 w-4" />
             </Button>
             ) : (
             <Button onClick={handleSubmit}>
-                {farmId ? 'Update Farm' : 'Submit'}
+                {farmId ? t('updateFarm') : t('submit')}
                 <Send className="ml-2 h-4 w-4" />
             </Button>
             )}
@@ -250,19 +252,20 @@ type Step1Props = {
 }
 
 function Step1({ formData, handleChange }: Step1Props) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4 max-w-2xl mx-auto">
       <div className="space-y-2">
-        <Label htmlFor="farmName">Farm Name</Label>
-        <Input id="farmName" placeholder="e.g., Sunny Meadows Farm" required value={formData.farmName} onChange={handleChange} />
+        <Label htmlFor="farmName">{t('farmName')}</Label>
+        <Input id="farmName" placeholder={t('farmNamePlaceholder')} required value={formData.farmName} onChange={handleChange} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="farmSize">Farm Size (in acres)</Label>
-        <Input id="farmSize" type="number" placeholder="e.g., 50" required value={formData.farmSize} onChange={handleChange} />
+        <Label htmlFor="farmSize">{t('farmSizeAcres')}</Label>
+        <Input id="farmSize" type="number" placeholder={t('farmSizePlaceholder')} required value={formData.farmSize} onChange={handleChange} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="mainCrops">Main Crops</Label>
-        <Textarea id="mainCrops" placeholder="e.g., Corn, Soybeans, Wheat" required value={formData.mainCrops} onChange={handleChange} />
+        <Label htmlFor="mainCrops">{t('mainCrops')}</Label>
+        <Textarea id="mainCrops" placeholder={t('mainCropsPlaceholder')} required value={formData.mainCrops} onChange={handleChange} />
       </div>
     </div>
   );
@@ -276,17 +279,18 @@ type Step2Props = {
 }
 
 function Step2({ formData, handleChange }: Step2Props) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
         <div className="space-y-2 max-w-2xl mx-auto">
-            <Label htmlFor="address">Address or general location</Label>
-            <Textarea id="address" placeholder="e.g., Near Springfield, Main road" required value={formData.address} onChange={handleChange} />
+            <Label htmlFor="address">{t('addressOrLocation')}</Label>
+            <Textarea id="address" placeholder={t('addressPlaceholder')} required value={formData.address} onChange={handleChange} />
         </div>
         <div className="aspect-video w-full bg-muted rounded-lg flex items-center justify-center mt-4">
             <div className="text-center text-muted-foreground p-4">
                 <MapPin className="mx-auto h-8 w-8 mb-2" />
-                <p>Map view will be available here.</p>
-                <p className="text-xs">(Future feature)</p>
+                <p>{t('mapViewAvailable')}</p>
+                <p className="text-xs">({t('futureFeature')})</p>
             </div>
         </div>
     </div>
@@ -301,6 +305,7 @@ type Step3Props = {
 };
 
 function Step3({ photos, addPhotoUrl, removePhoto }: Step3Props) {
+    const { t } = useTranslation();
     const [currentUrl, setCurrentUrl] = useState('');
 
     const handleAddClick = () => {
@@ -311,7 +316,7 @@ function Step3({ photos, addPhotoUrl, removePhoto }: Step3Props) {
   return (
     <div className="space-y-4 max-w-2xl mx-auto">
         <div className="space-y-2">
-            <Label htmlFor="photoUrl">Add Photo URL</Label>
+            <Label htmlFor="photoUrl">{t('addPhotoUrl')}</Label>
             <div className="flex gap-2">
                  <Input 
                   id="photoUrl"
@@ -320,18 +325,18 @@ function Step3({ photos, addPhotoUrl, removePhoto }: Step3Props) {
                   onChange={(e) => setCurrentUrl(e.target.value)}
                 />
                 <Button type="button" onClick={handleAddClick} disabled={!currentUrl}>
-                    <Plus className="mr-2 h-4 w-4" /> Add
+                    <Plus className="mr-2 h-4 w-4" /> {t('add')}
                 </Button>
             </div>
         </div>
         
         {photos.length > 0 &&
             <div className="space-y-2">
-                <Label>Photo Previews</Label>
+                <Label>{t('photoPreviews')}</Label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {photos.map((photo, index) => (
                         <div key={index} className="relative aspect-square w-full overflow-hidden rounded-md border">
-                            <Image src={photo} alt={`Farm photo ${index + 1}`} fill className="object-cover" unoptimized/>
+                            <Image src={photo} alt={`${t('farmPhoto')} ${index + 1}`} fill className="object-cover" unoptimized/>
                             <Button 
                               variant="destructive" 
                               size="icon" 

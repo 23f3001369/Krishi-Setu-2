@@ -40,6 +40,7 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart";
+import { useTranslation } from '@/hooks/use-translation';
 
 // Define schemas and types here, in the client component.
 export const MarketPricePredictionInputSchema = z.object({
@@ -69,6 +70,7 @@ export default function MarketPricePredictionPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<MarketPricePredictionOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -77,7 +79,7 @@ export default function MarketPricePredictionPage() {
 
   const handlePredict = async () => {
     if (!formData.cropName || !formData.marketLocation) {
-      setError('Please fill in both crop name and market location.');
+      setError(t('fillCropAndMarket'));
       return;
     }
     setIsLoading(true);
@@ -91,7 +93,7 @@ export default function MarketPricePredictionPage() {
       setResult(prediction);
     } catch (e) {
       console.error(e);
-      setError('Failed to get a price prediction. The model might be busy. Please try again.');
+      setError(t('failedToGetPrediction'));
     } finally {
       setIsLoading(false);
     }
@@ -108,16 +110,16 @@ export default function MarketPricePredictionPage() {
   const trendChartData = useMemo(() => {
     if (!result?.trendConfidence) return [];
     return [
-      { name: 'Upward', value: result.trendConfidence.upward, fill: 'hsl(var(--chart-1))' },
-      { name: 'Downward', value: result.trendConfidence.downward, fill: 'hsl(var(--chart-2))' },
-      { name: 'Stable', value: result.trendConfidence.stable, fill: 'hsl(var(--chart-3))' },
+      { name: t('upward'), value: result.trendConfidence.upward, fill: 'hsl(var(--chart-1))' },
+      { name: t('downward'), value: result.trendConfidence.downward, fill: 'hsl(var(--chart-2))' },
+      { name: t('stable'), value: result.trendConfidence.stable, fill: 'hsl(var(--chart-3))' },
     ].filter(item => item.value > 0);
-  }, [result]);
+  }, [result, t]);
 
   const chartConfig = {
-      upward: { label: 'Upward', color: 'hsl(var(--chart-1))' },
-      downward: { label: 'Downward', color: 'hsl(var(--chart-2))' },
-      stable: { label: 'Stable', color: 'hsl(var(--chart-3))' },
+      upward: { label: t('upward'), color: 'hsl(var(--chart-1))' },
+      downward: { label: t('downward'), color: 'hsl(var(--chart-2))' },
+      stable: { label: t('stable'), color: 'hsl(var(--chart-3))' },
   };
 
   const RADIAN = Math.PI / 180;
@@ -138,39 +140,39 @@ export default function MarketPricePredictionPage() {
     <div className="space-y-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight font-headline">
-          Mandi Price Prediction
+          {t('mandiPricePrediction')}
         </h1>
         <p className="text-muted-foreground">
-          Get forecasts based on data from well-known agricultural market websites.
+          {t('mandiPricePredictionDesc')}
         </p>
       </div>
 
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle>Get Price Prediction</CardTitle>
+          <CardTitle>{t('getPricePrediction')}</CardTitle>
           <CardDescription>
-            Enter a crop and market to get a forecast from our market analyst.
+            {t('getPricePredictionDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="cropName" className="flex items-center gap-1"><Wheat className="w-4 h-4" /> Crop Name</Label>
+              <Label htmlFor="cropName" className="flex items-center gap-1"><Wheat className="w-4 h-4" /> {t('cropName')}</Label>
               <Input
                 id="cropName"
                 name="cropName"
-                placeholder="e.g., Wheat, Tomato"
+                placeholder={t('cropNamePlaceholder')}
                 value={formData.cropName}
                 onChange={handleInputChange}
                 disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="marketLocation" className="flex items-center gap-1"><MapPin className="w-4 h-4" /> Market Location</Label>
+              <Label htmlFor="marketLocation" className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {t('marketLocation')}</Label>
               <Input
                 id="marketLocation"
                 name="marketLocation"
-                placeholder="e.g., Nashik, Indore"
+                placeholder={t('marketLocationPlaceholder')}
                 value={formData.marketLocation}
                 onChange={handleInputChange}
                 disabled={isLoading}
@@ -184,7 +186,7 @@ export default function MarketPricePredictionPage() {
             disabled={isLoading || !formData.cropName || !formData.marketLocation}
           >
             <Bot className="mr-2 h-4 w-4" />
-            {isLoading ? 'Analyzing Market...' : 'Know Price'}
+            {isLoading ? t('analyzingMarket') : t('knowPrice')}
           </Button>
         </CardFooter>
       </Card>
@@ -193,7 +195,7 @@ export default function MarketPricePredictionPage() {
 
       {error && (
         <Alert variant="destructive" className="max-w-2xl mx-auto">
-          <AlertTitle>Prediction Error</AlertTitle>
+          <AlertTitle>{t('predictionError')}</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -201,19 +203,19 @@ export default function MarketPricePredictionPage() {
       {result && (
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
-            <CardTitle>Prediction for {formData.cropName} in {formData.marketLocation}</CardTitle>
+            <CardTitle>{t('predictionFor', { crop: formData.cropName, market: formData.marketLocation })}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 p-6">
              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="p-4 rounded-lg bg-muted flex flex-col items-center justify-center text-center">
-                     <p className="text-sm text-muted-foreground flex items-center gap-1"><DollarSign className="w-3 h-3" /> Predicted Price</p>
+                     <p className="text-sm text-muted-foreground flex items-center gap-1"><DollarSign className="w-3 h-3" /> {t('predictedPrice')}</p>
                      <p className="text-2xl font-bold text-primary">{result.predictedPrice}</p>
                 </div>
                  <div className="p-4 rounded-lg bg-muted flex flex-col items-center justify-center text-center">
-                     <p className="text-sm text-muted-foreground flex items-center gap-1"><BarChart className="w-3 h-3" /> Most Likely Trend</p>
+                     <p className="text-sm text-muted-foreground flex items-center gap-1"><BarChart className="w-3 h-3" /> {t('mostLikelyTrend')}</p>
                      <p className="text-2xl font-bold capitalize flex items-center gap-2">
                         <TrendIcon trend={result.trend} />
-                        {result.trend}
+                        {t(result.trend)}
                     </p>
                 </div>
             </div>
@@ -221,8 +223,8 @@ export default function MarketPricePredictionPage() {
             {trendChartData.length > 0 && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Trend Confidence</CardTitle>
-                        <CardDescription>Confidence level for each potential price trend.</CardDescription>
+                        <CardTitle>{t('trendConfidence')}</CardTitle>
+                        <CardDescription>{t('trendConfidenceDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="p-6 flex items-center justify-center">
                         <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[250px]">
@@ -251,15 +253,15 @@ export default function MarketPricePredictionPage() {
 
             <Alert>
               <Lightbulb className="h-4 w-4" />
-              <AlertTitle>Analyst's Reasoning</AlertTitle>
+              <AlertTitle>{t('analystReasoning')}</AlertTitle>
               <AlertDescription>{result.reasoning}</AlertDescription>
             </Alert>
 
              <Alert variant="default" className="text-xs">
                 <Bot className="h-4 w-4" />
-                <AlertTitle>Disclaimer</AlertTitle>
+                <AlertTitle>{t('disclaimer')}</AlertTitle>
                 <AlertDescription>
-                    This generated prediction is for informational purposes only and is not financial advice. Market conditions can change rapidly.
+                    {t('predictionDisclaimer')}
                 </AlertDescription>
             </Alert>
           </CardContent>

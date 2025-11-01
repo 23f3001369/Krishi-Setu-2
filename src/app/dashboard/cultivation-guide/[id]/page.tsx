@@ -40,6 +40,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { type CultivationStage } from '@/ai/flows/generate-cultivation-guide';
 import Link from 'next/link';
+import { useTranslation } from '@/hooks/use-translation';
 
 type Task = {
     text: string;
@@ -64,6 +65,7 @@ export default function ViewGuidePage() {
     const params = useParams();
     const id = params.id as string;
     const router = useRouter();
+    const { t } = useTranslation();
 
     const { user } = useUser();
     const db = useFirestore();
@@ -107,16 +109,16 @@ export default function ViewGuidePage() {
             await updateDoc(guideDocRef, { stages: updatedStages });
             if (showToast) {
                 toast({
-                    title: 'Stage Updated',
-                    description: 'The status of your cultivation stages has been saved.',
+                    title: t('stageUpdated'),
+                    description: t('stageUpdatedDesc'),
                 });
             }
         } catch (error) {
             console.error("Error updating stages:", error);
             toast({
                 variant: 'destructive',
-                title: 'Error',
-                description: 'Could not update the guide. Please try again.',
+                title: t('error'),
+                description: t('couldNotUpdateGuide'),
             });
         } finally {
             setIsUpdating(false);
@@ -155,10 +157,10 @@ export default function ViewGuidePage() {
     if (!guide) {
         return (
              <div className="text-center py-16">
-                <h2 className="text-xl font-semibold">Guide not found</h2>
-                <p className="text-muted-foreground mt-2">The cultivation guide you are looking for does not exist or has been deleted.</p>
+                <h2 className="text-xl font-semibold">{t('guideNotFound')}</h2>
+                <p className="text-muted-foreground mt-2">{t('guideNotFoundDesc')}</p>
                 <Button asChild className="mt-4">
-                    <Link href="/dashboard/my-guides">Go to My Guides</Link>
+                    <Link href="/dashboard/my-guides">{t('goToMyGuides')}</Link>
                 </Button>
             </div>
         )
@@ -174,15 +176,15 @@ export default function ViewGuidePage() {
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight font-headline">Cultivation Guide: {guide.crop}</h1>
-                    <p className="text-muted-foreground">Your detailed plan for cultivating {guide.variety}.</p>
+                    <h1 className="text-3xl font-bold tracking-tight font-headline">{t('cultivationGuide')}: {guide.crop}</h1>
+                    <p className="text-muted-foreground">{t('cultivationGuideDesc', { variety: guide.variety })}</p>
                 </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Crop & Variety</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('cropVariety')}</CardTitle>
                         <Sprout className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent className="p-6">
@@ -191,16 +193,16 @@ export default function ViewGuidePage() {
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Estimated Duration</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('estDuration')}</CardTitle>
                         <CalendarDays className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent className="p-6">
-                        <div className="text-2xl font-bold">{guide.estimatedDurationDays} days</div>
+                        <div className="text-2xl font-bold">{guide.estimatedDurationDays} {t('days')}</div>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Estimated Expenses</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('estExpenses')}</CardTitle>
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent className="p-6">
@@ -211,8 +213,8 @@ export default function ViewGuidePage() {
 
              <Card>
                 <CardHeader>
-                    <CardTitle>Cultivation Stages</CardTitle>
-                    <CardDescription>Track your progress through each stage of cultivation.</CardDescription>
+                    <CardTitle>{t('cultivationStages')}</CardTitle>
+                    <CardDescription>{t('cultivationStagesDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-6">
                     <Accordion type="single" collapsible defaultValue={`item-${activeStageIndex}`} className="w-full">
@@ -229,20 +231,20 @@ export default function ViewGuidePage() {
                                 </AccordionTrigger>
                                 <AccordionContent className="pt-4 space-y-6">
                                     <div>
-                                        <h4 className="font-semibold flex items-center gap-2 mb-2"><Bot className="h-5 w-5 text-primary" /> AI Instruction</h4>
+                                        <h4 className="font-semibold flex items-center gap-2 mb-2"><Bot className="h-5 w-5 text-primary" /> {t('aiInstruction')}</h4>
                                         <p className="text-muted-foreground">{stage.aiInstruction}</p>
                                     </div>
 
                                     {stage.pestAndDiseaseAlert && (
                                         <Alert variant="destructive">
                                             <Bug className="h-4 w-4" />
-                                            <AlertTitle>Pest & Disease Alert</AlertTitle>
+                                            <AlertTitle>{t('pestDiseaseAlert')}</AlertTitle>
                                             <AlertDescription>{stage.pestAndDiseaseAlert}</AlertDescription>
                                         </Alert>
                                     )}
 
                                     <div>
-                                        <h4 className="font-semibold flex items-center gap-2 mb-2"><ListTodo className="h-5 w-5 text-primary"/> Tasks for this stage</h4>
+                                        <h4 className="font-semibold flex items-center gap-2 mb-2"><ListTodo className="h-5 w-5 text-primary"/> {t('tasksForStage')}</h4>
                                         <div className="space-y-2">
                                             {stage.tasks.map((task, taskIndex) => (
                                                 <div key={taskIndex} className="flex items-center gap-3 p-2 bg-muted/50 rounded-md">
@@ -268,14 +270,14 @@ export default function ViewGuidePage() {
                     {allStagesCompleted ? (
                         <Alert variant="default" className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 w-full">
                             <CheckCircle className="h-4 w-4" />
-                            <AlertTitle>Cultivation Complete!</AlertTitle>
+                            <AlertTitle>{t('cultivationComplete')}</AlertTitle>
                             <AlertDescription>
-                                Congratulations! You have completed all stages for this crop.
+                                {t('cultivationCompleteDesc')}
                             </AlertDescription>
                         </Alert>
                     ) : (
                          <Button onClick={handleNextStage} disabled={activeStageIndex === -1 || isUpdating}>
-                            {isUpdating ? "Saving..." : "Mark Current Stage as Complete & Move to Next"}
+                            {isUpdating ? t('saving') : t('completeStageAndNext')}
                          </Button>
                     )}
                 </CardFooter>

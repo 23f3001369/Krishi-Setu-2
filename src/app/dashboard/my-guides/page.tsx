@@ -30,6 +30,7 @@ import { collection, doc, deleteDoc, Timestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PlusCircle, ClipboardList, Trash2, AlertTriangle, Sprout, Clock } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 const heroImage = PlaceHolderImages.find(p => p.id === "cultivation-guide-hero");
 
@@ -55,6 +56,7 @@ export default function MyGuidesPage() {
     const { user } = useUser();
     const db = useFirestore();
     const { toast } = useToast();
+    const { t } = useTranslation();
 
     const [guideToDelete, setGuideToDelete] = useState<CultivationGuide | null>(null);
 
@@ -73,15 +75,15 @@ export default function MyGuidesPage() {
             const guideDoc = doc(guidesQuery.firestore, guidesQuery.path, guideToDelete.id);
             await deleteDoc(guideDoc);
             toast({
-                title: 'Guide Deleted',
-                description: `The cultivation guide for "${guideToDelete.crop}" has been removed.`,
+                title: t('guideDeleted'),
+                description: t('guideDeletedDesc', { crop: guideToDelete.crop }),
             });
         } catch (error) {
             console.error("Error deleting guide:", error);
             toast({
                 variant: 'destructive',
-                title: 'Error',
-                description: 'Could not delete the guide. Please try again.',
+                title: t('error'),
+                description: t('couldNotDeleteGuide'),
             });
         } finally {
             setGuideToDelete(null);
@@ -92,13 +94,13 @@ export default function MyGuidesPage() {
         <div className="space-y-8">
             <div className="mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight font-headline">My Cultivation Guides</h1>
-                    <p className="text-muted-foreground">All your saved crop plans in one place.</p>
+                    <h1 className="text-3xl font-bold tracking-tight font-headline">{t('myCultivationGuides')}</h1>
+                    <p className="text-muted-foreground">{t('myCultivationGuidesDesc')}</p>
                 </div>
                  <Button asChild>
                     <Link href="/dashboard/cultivation-guide">
                         <PlusCircle className="mr-2 h-4 w-4" />
-                        Create New Guide
+                        {t('createNewGuide')}
                     </Link>
                 </Button>
             </div>
@@ -135,28 +137,28 @@ export default function MyGuidesPage() {
                                             <CardTitle className="text-xl">{guide.crop}</CardTitle>
                                             <CardDescription>{guide.variety}</CardDescription>
                                         </div>
-                                         <Badge variant={activeStage ? 'default' : 'secondary'}>{activeStage?.name || 'Completed'}</Badge>
+                                         <Badge variant={activeStage ? 'default' : 'secondary'}>{activeStage?.name || t('completed')}</Badge>
                                     </div>
                                 </CardHeader>
                                 <CardContent className="flex-grow space-y-4 p-6">
                                     <div className="flex items-center gap-3 text-sm">
                                         <Sprout className="w-5 h-5 text-primary"/>
                                         <div>
-                                            <p className="text-muted-foreground">Crop / Variety</p>
+                                            <p className="text-muted-foreground">{t('cropVariety')}</p>
                                             <p className="font-bold">{guide.crop} / {guide.variety}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3 text-sm">
                                         <Clock className="w-5 h-5 text-primary"/>
                                         <div>
-                                            <p className="text-muted-foreground">Est. Duration</p>
-                                            <p className="font-bold">{guide.estimatedDurationDays} days</p>
+                                            <p className="text-muted-foreground">{t('estDuration')}</p>
+                                            <p className="font-bold">{guide.estimatedDurationDays} {t('days')}</p>
                                         </div>
                                     </div>
                                 </CardContent>
                                 <CardFooter className="flex justify-between p-6">
                                     <Button asChild>
-                                        <Link href={`/dashboard/cultivation-guide/${guide.id}`}>View Guide</Link>
+                                        <Link href={`/dashboard/cultivation-guide/${guide.id}`}>{t('viewGuide')}</Link>
                                     </Button>
                                     <Button variant="ghost" size="icon" className="text-destructive" onClick={() => setGuideToDelete(guide)}>
                                         <Trash2 className="w-4 h-4"/>
@@ -169,12 +171,12 @@ export default function MyGuidesPage() {
             ) : !isLoading && (
                  <div className="text-center py-16 border-2 border-dashed rounded-lg">
                     <ClipboardList className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <h3 className="mt-4 text-lg font-semibold">No Guides Found</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">You haven't created any cultivation guides yet.</p>
+                    <h3 className="mt-4 text-lg font-semibold">{t('noGuidesFound')}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">{t('noGuidesFoundDesc')}</p>
                     <Button className="mt-6" asChild>
                          <Link href="/dashboard/cultivation-guide">
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Create Your First Guide
+                            {t('createYourFirstGuide')}
                         </Link>
                     </Button>
                 </div>
@@ -186,16 +188,16 @@ export default function MyGuidesPage() {
                     <AlertDialogHeader>
                         <AlertDialogTitle className="flex items-center gap-2">
                             <AlertTriangle className="text-destructive"/>
-                            Confirm Deletion
+                            {t('confirmDeletion')}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete the guide for "<strong>{guideToDelete?.crop}</strong>"? This action cannot be undone.
+                            {t('deleteGuideConfirmation', { crop: guideToDelete?.crop })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setGuideToDelete(null)}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={() => setGuideToDelete(null)}>{t('cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={handleDeleteGuide} className="bg-destructive hover:bg-destructive/90">
-                            Delete
+                            {t('delete')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

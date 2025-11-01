@@ -43,6 +43,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/use-translation';
 
 
 type Transaction = {
@@ -60,6 +61,7 @@ const incomeCategories = ['Sale', 'Subsidy', 'Other'];
 
 export default function KrishiKhataPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { t } = useTranslation();
   
   const heroImage = PlaceHolderImages.find(p => p.id === "krishi-khata-hero");
   const { user } = useUser();
@@ -68,7 +70,6 @@ export default function KrishiKhataPage() {
 
   const transactionsQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
-    // This query is now memoized, preventing re-renders from creating new query objects
     return collection(db, 'farmers', user.uid, 'transactions');
   }, [db, user?.uid]);
 
@@ -97,11 +98,11 @@ export default function KrishiKhataPage() {
             createdAt: Timestamp.now(),
             date: Timestamp.fromDate(transaction.date),
         });
-        toast({ title: 'Success', description: 'Transaction added.' });
+        toast({ title: t('success'), description: t('transactionAdded') });
         setIsDialogOpen(false);
     } catch(e) {
         console.error(e);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not add transaction.' });
+        toast({ variant: 'destructive', title: t('error'), description: t('couldNotAddTransaction') });
     }
   };
 
@@ -109,10 +110,10 @@ export default function KrishiKhataPage() {
     if (!transactionsQuery) return;
     try {
         await deleteDoc(doc(transactionsQuery.firestore, transactionsQuery.path, id));
-        toast({ title: 'Success', description: 'Transaction deleted.' });
+        toast({ title: t('success'), description: t('transactionDeleted') });
     } catch (e) {
         console.error(e);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not delete transaction.' });
+        toast({ variant: 'destructive', title: t('error'), description: t('couldNotDeleteTransaction') });
     }
   };
   
@@ -126,15 +127,15 @@ export default function KrishiKhataPage() {
   return (
     <div className="space-y-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight font-headline">Krishi Khata</h1>
-        <p className="text-muted-foreground">Your digital ledger for tracking farm finances.</p>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">{t('krishiKhata')}</h1>
+        <p className="text-muted-foreground">{t('krishiKhataSubtitle')}</p>
       </div>
 
       {heroImage && (
         <div className="relative h-48 w-full overflow-hidden rounded-lg">
             <Image src={heroImage.imageUrl} alt={heroImage.description} data-ai-hint={heroImage.imageHint} fill className="object-cover" />
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <h2 className="text-4xl font-bold text-white font-headline">Financial Overview</h2>
+                <h2 className="text-4xl font-bold text-white font-headline">{t('financialOverview')}</h2>
             </div>
         </div>
       )}
@@ -142,7 +143,7 @@ export default function KrishiKhataPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle>Total Income</CardTitle>
+            <CardTitle>{t('totalIncome')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent className="p-6">
@@ -151,7 +152,7 @@ export default function KrishiKhataPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle>Total Expenses</CardTitle>
+            <CardTitle>{t('totalExpenses')}</CardTitle>
             <TrendingDown className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent className="p-6">
@@ -160,7 +161,7 @@ export default function KrishiKhataPage() {
         </Card>
         <Card className={profitLoss >= 0 ? 'border-green-500/50' : 'border-red-500/50'}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle>Profit / Loss</CardTitle>
+            <CardTitle>{t('profitLoss')}</CardTitle>
             <MinusCircle className={`h-4 w-4 ${profitLoss >= 0 ? 'text-green-500' : 'text-red-500'}`} />
           </CardHeader>
           <CardContent className="p-6">
@@ -169,7 +170,7 @@ export default function KrishiKhataPage() {
                  <div className={`text-2xl font-bold ${profitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     Rs.{Math.abs(profitLoss).toLocaleString()}
                 </div>
-                <p className="text-xs text-muted-foreground">{profitLoss >= 0 ? 'Profit' : 'Loss'}</p>
+                <p className="text-xs text-muted-foreground">{t(profitLoss >= 0 ? 'profit' : 'loss')}</p>
                 </>
             )}
           </CardContent>
@@ -179,14 +180,14 @@ export default function KrishiKhataPage() {
       <Card>
         <CardHeader className="flex items-center justify-between">
           <div>
-            <CardTitle>Transaction History</CardTitle>
-            <CardDescription>A record of all your income and expenses.</CardDescription>
+            <CardTitle>{t('transactionHistory')}</CardTitle>
+            <CardDescription>{t('transactionHistoryDesc')}</CardDescription>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
                 <Button>
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Transaction
+                    {t('addTransaction')}
                 </Button>
             </DialogTrigger>
             <TransactionDialog onSubmit={addTransaction} />
@@ -196,12 +197,12 @@ export default function KrishiKhataPage() {
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
-                        <TableHead><span className="sr-only">Actions</span></TableHead>
+                        <TableHead>{t('date')}</TableHead>
+                        <TableHead>{t('type')}</TableHead>
+                        <TableHead>{t('category')}</TableHead>
+                        <TableHead>{t('description')}</TableHead>
+                        <TableHead className="text-right">{t('amount')}</TableHead>
+                        <TableHead><span className="sr-only">{t('actions')}</span></TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -221,8 +222,8 @@ export default function KrishiKhataPage() {
                             <TableCell>{formatDate(t.date)}</TableCell>
                             <TableCell>
                                 {t.type === 'income' ? 
-                                    <span className="flex items-center gap-2 text-green-600"><ArrowUpCircle size={16}/> Income</span> : 
-                                    <span className="flex items-center gap-2 text-red-600"><ArrowDownCircle size={16}/> Expense</span>
+                                    <span className="flex items-center gap-2 text-green-600"><ArrowUpCircle size={16}/> {t('income')}</span> : 
+                                    <span className="flex items-center gap-2 text-red-600"><ArrowDownCircle size={16}/> {t('expense')}</span>
                                 }
                             </TableCell>
                             <TableCell>{t.category}</TableCell>
@@ -238,7 +239,7 @@ export default function KrishiKhataPage() {
                 </TableBody>
             </Table>
             {!isLoading && transactions?.length === 0 && (
-                <div className="text-center text-muted-foreground p-8">No transactions yet.</div>
+                <div className="text-center text-muted-foreground p-8">{t('noTransactionsYet')}</div>
             )}
         </CardContent>
       </Card>
@@ -252,8 +253,12 @@ function TransactionDialog({ onSubmit }: { onSubmit: (data: Omit<Transaction, 'i
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
     const [date, setDate] = useState<Date | undefined>(new Date());
+    const { t } = useTranslation();
 
-    const categories = type === 'income' ? incomeCategories : expenseCategories;
+    const categories = useMemo(() => {
+        const cats = type === 'income' ? incomeCategories : expenseCategories;
+        return cats.map(c => ({ value: c, label: t(c.toLowerCase()) }));
+    }, [type, t]);
     
     React.useEffect(() => {
         setCategory('');
@@ -282,46 +287,46 @@ function TransactionDialog({ onSubmit }: { onSubmit: (data: Omit<Transaction, 'i
     return (
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Add New Transaction</DialogTitle>
+                <DialogTitle>{t('addNewTransaction')}</DialogTitle>
                 <DialogDescription>
-                    Record a new income or expense to keep your ledger up to date.
+                    {t('addNewTransactionDesc')}
                 </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                        <Label>Transaction Type</Label>
+                        <Label>{t('transactionType')}</Label>
                         <Select onValueChange={(v: 'income' | 'expense') => setType(v)} value={type}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Select type" />
+                                <SelectValue placeholder={t('selectType')} />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="expense">Expense</SelectItem>
-                                <SelectItem value="income">Income</SelectItem>
+                                <SelectItem value="expense">{t('expense')}</SelectItem>
+                                <SelectItem value="income">{t('income')}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
                      <div className="space-y-2">
-                        <Label>Category</Label>
+                        <Label>{t('category')}</Label>
                          <Select onValueChange={setCategory} value={category}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a category" />
+                                <SelectValue placeholder={t('selectCategory')} />
                             </SelectTrigger>
                             <SelectContent>
-                                {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                {categories.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="amount">Amount (Rs.)</Label>
+                        <Label htmlFor="amount">{t('amountInCurrency')}</Label>
                         <Input id="amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} required />
                     </div>
                      <div className="space-y-2">
-                        <Label htmlFor="description">Description</Label>
-                        <Input id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="e.g., Bags of urea" />
+                        <Label htmlFor="description">{t('description')}</Label>
+                        <Input id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder={t('descriptionPlaceholder')} />
                     </div>
                      <div className="space-y-2">
-                        <Label htmlFor="date">Date</Label>
+                        <Label htmlFor="date">{t('date')}</Label>
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
@@ -332,7 +337,7 @@ function TransactionDialog({ onSubmit }: { onSubmit: (data: Omit<Transaction, 'i
                                 )}
                                 >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                {date ? format(date, "PPP") : <span>Pick a date</span>}
+                                {date ? format(date, "PPP") : <span>{t('pickADate')}</span>}
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0">
@@ -349,9 +354,9 @@ function TransactionDialog({ onSubmit }: { onSubmit: (data: Omit<Transaction, 'i
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button type="button" variant="outline">Cancel</Button>
+                        <Button type="button" variant="outline">{t('cancel')}</Button>
                     </DialogClose>
-                    <Button type="submit">Save Transaction</Button>
+                    <Button type="submit">{t('saveTransaction')}</Button>
                 </DialogFooter>
             </form>
         </DialogContent>

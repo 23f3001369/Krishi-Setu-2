@@ -24,6 +24,7 @@ import { Leaf, Lightbulb, Upload, Bot, Sparkles, Wand2, Mic, AlertCircle } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { useUser } from '@/firebase';
+import { useTranslation } from '@/hooks/use-translation';
 
 type RecommendationState = {
   data?: {
@@ -37,10 +38,11 @@ const initialRecommendationState: RecommendationState = {};
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const { t } = useTranslation();
   return (
     <Button type="submit" disabled={pending} className="w-full sm:w-auto">
       <Bot className="mr-2 h-4 w-4" />
-      {pending ? 'Getting Recommendations...' : 'Get Recommendations'}
+      {pending ? t('gettingRecommendations') : t('getRecommendations')}
     </Button>
   );
 }
@@ -89,16 +91,17 @@ function GeneralAgriBot() {
     const [error, setError] = useState<React.ReactNode | null>(null);
     const [isRecording, setIsRecording] = useState(false);
     const [micDisabled, setMicDisabled] = useState(false);
+    const { t, langName } = useTranslation();
 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
 
     useEffect(() => {
         if (typeof window !== 'undefined' && !navigator.mediaDevices?.getUserMedia) {
-            setError("Sorry, your browser doesn't support microphone access.");
+            setError(t('micNotSupported'));
             setMicDisabled(true);
         }
-    }, []);
+    }, [t]);
 
     const handleMicClick = async () => {
         setError(null);
@@ -123,13 +126,13 @@ function GeneralAgriBot() {
                     reader.onloadend = async () => {
                         const base64Audio = reader.result as string;
                         setIsLoading(true);
-                        setQuestion('Transcribing audio...');
+                        setQuestion(t('transcribingAudio'));
                         try {
                             const result = await transcribeAudio({ audio: base64Audio });
                             setQuestion(result.text);
                         } catch (e) {
                             console.error(e);
-                            setError('Could not transcribe audio. Please try again.');
+                            setError(t('couldNotTranscribe'));
                             setQuestion('');
                         } finally {
                             setIsLoading(false);
@@ -142,17 +145,17 @@ function GeneralAgriBot() {
                 setIsRecording(true);
             } catch (err) {
                 console.error(err);
-                let errorMessage: React.ReactNode = 'Could not access the microphone. Please check permissions and try again.';
+                let errorMessage: React.ReactNode = t('micAccessError');
                 if (err instanceof DOMException) {
                     if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                        errorMessage = 'Microphone permission was denied. Please allow it in your browser settings.';
+                        errorMessage = t('micPermissionDenied');
                     } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-                        errorMessage = 'No microphone was found. Please ensure one is connected and enabled.';
+                        errorMessage = t('micNotFound');
                     } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError' || err.name === 'audio-capture') {
                         errorMessage = (
                             <div>
-                                <p className="font-bold">Microphone is unavailable.</p>
-                                <p className="mt-2">The browser could not access your microphone. Please close other apps or tabs using it, check permissions, then refresh the page.</p>
+                                <p className="font-bold">{t('micUnavailable')}</p>
+                                <p className="mt-2">{t('micUnavailableDesc')}</p>
                             </div>
                         );
                         setMicDisabled(true);
@@ -164,16 +167,16 @@ function GeneralAgriBot() {
     };
 
     const handleAskQuestion = async () => {
-        if (!question || question === 'Transcribing audio...') return;
+        if (!question || question === t('transcribingAudio')) return;
         setIsLoading(true);
         setError(null);
         setAnswer('');
         try {
-            const result = await agriQa({ question });
+            const result = await agriQa({ question, language: langName });
             setAnswer(result.answer);
         } catch(e) {
             console.error(e);
-            setError('Failed to get an answer. Please try again.');
+            setError(t('failedToGetAnswer'));
         } finally {
             setIsLoading(false);
         }
@@ -182,20 +185,20 @@ function GeneralAgriBot() {
     return (
         <Card className="max-w-3xl mx-auto">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-primary" /> General Agri-Bot</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-primary" />{t('generalAgriBot')}</CardTitle>
                 <CardDescription>
-                Ask any general agricultural question, from soil types to crop varieties.
+                {t('generalAgriBotDesc')}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 p-6">
                 <div className="space-y-2">
-                    <Label htmlFor="general-question">Your Question</Label>
+                    <Label htmlFor="general-question">{t('yourQuestion')}</Label>
                     <div className="flex gap-2">
                         <Textarea 
                             id="general-question"
                             value={question}
                             onChange={(e) => setQuestion(e.target.value)}
-                            placeholder='e.g., "Which soil is suitable for soybean?" or "What are the crop varieties of Corn ?"'
+                            placeholder={t('generalQuestionPlaceholder')}
                             disabled={isLoading}
                         />
                         <Button 
@@ -203,7 +206,7 @@ function GeneralAgriBot() {
                             size="icon" 
                             onClick={handleMicClick} 
                             disabled={micDisabled || isLoading}
-                            title={micDisabled ? "Microphone is unavailable" : (isRecording ? "Stop recording" : "Use microphone")}
+                            title={micDisabled ? t('micUnavailable') : (isRecording ? t('stopRecording') : t('useMicrophone'))}
                             className="h-auto"
                         >
                             <Mic className={isRecording ? 'text-primary animate-pulse' : ''} />
@@ -213,22 +216,22 @@ function GeneralAgriBot() {
                  {error && (
                     <Alert variant="destructive">
                         <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Microphone Error</AlertTitle>
+                        <AlertTitle>{t('micError')}</AlertTitle>
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
                 )}
             </CardContent>
             <CardFooter className="p-6">
-                <Button onClick={handleAskQuestion} disabled={isLoading || !question || question === 'Transcribing audio...'}>
+                <Button onClick={handleAskQuestion} disabled={isLoading || !question || question === t('transcribingAudio')}>
                     <Bot className="mr-2 h-4 w-4" />
-                    {isLoading ? (question === 'Transcribing audio...' ? 'Transcribing...' : 'Thinking...') : 'Ask Agri-Bot'}
+                    {isLoading ? (question === t('transcribingAudio') ? t('transcribing') : t('thinking')) : t('askAgriBot')}
                 </Button>
             </CardFooter>
             {answer && (
                  <CardFooter className="p-6 pt-0">
                     <Alert>
                         <Bot className="h-4 w-4" />
-                        <AlertTitle>Answer</AlertTitle>
+                        <AlertTitle>{t('answer')}</AlertTitle>
                         <AlertDescription>
                             <p>{answer}</p>
                         </AlertDescription>
@@ -250,6 +253,7 @@ export default function CropRecommendationPage() {
   const [activeTab, setActiveTab] = useState('manual');
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractError, setExtractError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -290,7 +294,7 @@ export default function CropRecommendationPage() {
         setActiveTab('manual'); // Switch to manual tab to show the result
     } catch(e) {
         console.error(e);
-        setExtractError('Failed to extract information from image. Please try again or enter details manually.');
+        setExtractError(t('failedToExtractInfo'));
     } finally {
         setIsExtracting(false);
     }
@@ -300,10 +304,10 @@ export default function CropRecommendationPage() {
     <div className="space-y-8">
       <div className='mb-8'>
         <h1 className="text-3xl font-bold tracking-tight font-headline">
-          AI Crop Tools
+          {t('aiCropTools')}
         </h1>
         <p className="text-muted-foreground">
-          Get expert advice on what to plant next or ask general farming questions.
+          {t('aiCropToolsDesc')}
         </p>
       </div>
 
@@ -312,43 +316,42 @@ export default function CropRecommendationPage() {
       <Card className="max-w-3xl mx-auto">
         <form action={formAction}>
           <CardHeader>
-            <CardTitle>Specific Crop Recommendation</CardTitle>
+            <CardTitle>{t('specificCropRecommendation')}</CardTitle>
             <CardDescription>
-              Enter the latest data from your farm to receive tailored crop
-              recommendations and save the report.
+              {t('specificCropRecommendationDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 p-6">
             <input type="hidden" name="farmerId" value={user?.uid || ''} />
             <div className="space-y-2">
-              <Label>Soil Details</Label>
+              <Label>{t('soilDetails')}</Label>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="manual">Manual Entry</TabsTrigger>
-                  <TabsTrigger value="upload">Upload Report</TabsTrigger>
+                  <TabsTrigger value="manual">{t('manualEntry')}</TabsTrigger>
+                  <TabsTrigger value="upload">{t('uploadReport')}</TabsTrigger>
                 </TabsList>
                 <TabsContent value="manual" className="pt-4 space-y-6">
                   <Textarea
                     name="soilAnalysis"
-                    placeholder="e.g., pH: 6.8, Nitrogen: High, Phosphorus: Medium, Potassium: Low, Organic Matter: 3.5%"
+                    placeholder={t('soilAnalysisPlaceholder')}
                     id="soilAnalysis"
                     value={soilAnalysis}
                     onChange={(e) => setSoilAnalysis(e.target.value)}
                   />
                   <div className="space-y-2">
-                      <Label htmlFor="realTimeWeatherConditions">Real-time Weather Conditions</Label>
+                      <Label htmlFor="realTimeWeatherConditions">{t('weatherConditions')}</Label>
                       <Textarea
                           name="realTimeWeatherConditions"
-                          placeholder="e.g., Temp: 25°C, Humidity: 70%, Wind: 10km/h, Last rainfall: 2 days ago"
+                          placeholder={t('weatherConditionsPlaceholder')}
                           id="realTimeWeatherConditions"
                           required
                       />
                   </div>
                    <div className="space-y-2">
-                      <Label htmlFor="seasonalData">Seasonal Data</Label>
+                      <Label htmlFor="seasonalData">{t('seasonalData')}</Label>
                       <Textarea
                           name="seasonalData"
-                          placeholder="e.g., Current season: Late Spring, Average rainfall for this period: 50mm"
+                          placeholder={t('seasonalDataPlaceholder')}
                           id="seasonalData"
                           required
                       />
@@ -362,7 +365,7 @@ export default function CropRecommendationPage() {
                     >
                       <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
                       <p className="mt-2 text-sm text-muted-foreground">
-                        Click to upload your Soil Health Card
+                        {t('clickToUploadSoilCard')}
                       </p>
                       <Input
                         ref={fileInputRef}
@@ -378,7 +381,7 @@ export default function CropRecommendationPage() {
                       <div className="relative aspect-video w-full overflow-hidden rounded-md border">
                         <Image
                           src={imagePreview}
-                          alt="Soil report preview"
+                          alt={t('soilReportPreview')}
                           fill
                           className="object-contain"
                         />
@@ -391,7 +394,7 @@ export default function CropRecommendationPage() {
                             onClick={handleRemoveImage}
                             disabled={isExtracting}
                         >
-                            Remove Image
+                            {t('removeImage')}
                         </Button>
                         <Button
                             type="button"
@@ -400,7 +403,7 @@ export default function CropRecommendationPage() {
                             disabled={isExtracting}
                         >
                             <Wand2 className="mr-2 h-4 w-4" />
-                            {isExtracting ? 'Extracting...' : 'Extract'}
+                            {isExtracting ? t('extracting') : t('extract')}
                         </Button>
                       </div>
                     </div>
@@ -412,7 +415,7 @@ export default function CropRecommendationPage() {
                   />
                    {extractError && (
                     <Alert variant="destructive" className="mt-4">
-                        <AlertTitle>Extraction Error</AlertTitle>
+                        <AlertTitle>{t('extractionError')}</AlertTitle>
                         <AlertDescription>{extractError}</AlertDescription>
                     </Alert>
                 )}
@@ -424,7 +427,7 @@ export default function CropRecommendationPage() {
               <div className="space-y-6 pt-4 border-t">
                 <Alert className="bg-primary/5 border-primary/20">
                   <Leaf className="h-4 w-4 !text-primary" />
-                  <AlertTitle className="text-primary">Optimal Crops</AlertTitle>
+                  <AlertTitle className="text-primary">{t('optimalCrops')}</AlertTitle>
                   <AlertDescription>
                     <p className="text-lg font-semibold">
                       {recommendationState.data.optimalCrops}
@@ -433,7 +436,7 @@ export default function CropRecommendationPage() {
                 </Alert>
                 <Alert>
                   <Lightbulb className="h-4 w-4" />
-                  <AlertTitle>Reasoning</AlertTitle>
+                  <AlertTitle>{t('reasoning')}</AlertTitle>
                   <AlertDescription>
                     <p>{recommendationState.data.reasoning}</p>
                   </AlertDescription>
@@ -443,7 +446,7 @@ export default function CropRecommendationPage() {
 
             {recommendationState.error && !recommendationState.data && (
               <Alert variant="destructive">
-                <AlertTitle>Error</AlertTitle>
+                <AlertTitle>{t('error')}</AlertTitle>
                 <AlertDescription>{recommendationState.error}</AlertDescription>
               </Alert>
             )}

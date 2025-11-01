@@ -10,6 +10,7 @@ import WeatherForecast from "@/components/dashboard/weather-forecast";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslation } from '@/hooks/use-translation';
 
 
 type Farm = {
@@ -23,6 +24,7 @@ type Farm = {
 function MyFarmCard() {
     const { user } = useUser();
     const db = useFirestore();
+    const { t } = useTranslation();
 
     const farmsQuery = useMemoFirebase(() => {
         if (!db || !user?.uid) return null;
@@ -59,16 +61,16 @@ function MyFarmCard() {
             <Card className="text-center">
                 <CardHeader>
                     <Tractor className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <CardTitle>No Farm Registered</CardTitle>
+                    <CardTitle>{t('noFarmRegistered')}</CardTitle>
                     <CardDescription>
-                        Register your farm to get started with personalized insights and recommendations.
+                        {t('noFarmRegisteredDesc')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Button asChild>
                         <Link href="/dashboard/farm-registration">
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Register Your Farm
+                            {t('registerYourFarm')}
                         </Link>
                     </Button>
                 </CardContent>
@@ -82,14 +84,14 @@ function MyFarmCard() {
                 <div>
                     <CardTitle className="flex items-center gap-2">
                         <Tractor className="w-6 h-6 text-primary" />
-                        My Farm: {largestFarm.name}
+                        {t('myFarm')}: {largestFarm.name}
                     </CardTitle>
-                    <CardDescription>Details of your largest registered farm.</CardDescription>
+                    <CardDescription>{t('myFarmDesc')}</CardDescription>
                 </div>
                 <Button variant="outline" size="sm" asChild>
                     <Link href={`/dashboard/farm-registration?id=${largestFarm.id}`}>
                         <Edit className="w-4 h-4 mr-2" />
-                        Edit Farm
+                        {t('editFarm')}
                     </Link>
                 </Button>
             </CardHeader>
@@ -97,21 +99,21 @@ function MyFarmCard() {
                 <div className="flex items-center gap-3">
                     <MapPin className="w-6 h-6 text-muted-foreground" />
                     <div>
-                        <p className="text-sm text-muted-foreground">Location</p>
+                        <p className="text-sm text-muted-foreground">{t('location')}</p>
                         <p className="font-semibold">{largestFarm.location}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <AreaChart className="w-6 h-6 text-muted-foreground" />
                     <div>
-                        <p className="text-sm text-muted-foreground">Farm Size</p>
-                        <p className="font-semibold">{largestFarm.size} acres</p>
+                        <p className="text-sm text-muted-foreground">{t('farmSize')}</p>
+                        <p className="font-semibold">{largestFarm.size} {t('acres')}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <Sprout className="w-6 h-6 text-muted-foreground" />
                     <div>
-                        <p className="text-sm text-muted-foreground">Main Crops</p>
+                        <p className="text-sm text-muted-foreground">{t('mainCrops')}</p>
                         <p className="font-semibold">{largestFarm.mainCrops.join(', ')}</p>
                     </div>
                 </div>
@@ -122,11 +124,12 @@ function MyFarmCard() {
 
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight font-headline">Welcome back, Farmer!</h1>
-        <p className="text-muted-foreground">Here's an overview of your farm's status and today's forecast.</p>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">{t('welcomeBack')}</h1>
+        <p className="text-muted-foreground">{t('dashboardSubtitle')}</p>
       </div>
       
       <MyFarmCard />
